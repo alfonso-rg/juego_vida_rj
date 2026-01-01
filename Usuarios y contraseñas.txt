@@ -1,4 +1,0 @@
-MongoDBAtlas
-
-Usuario cluster: familia
-contraseña: passwordfamilia2909
