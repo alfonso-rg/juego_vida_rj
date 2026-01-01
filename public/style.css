@@ -1,0 +1,86 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f2f5;
+    text-align: center;
+    padding: 20px;
+}
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.hidden { display: none; }
+h1 { color: #2c3e50; }
+input, select {
+    padding: 10px;
+    margin: 10px 0;
+    width: 80%;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+button {
+    padding: 10px 20px;
+    margin: 10px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: transform 0.1s;
+}
+button:active { transform: scale(0.95); }
+
+.btn-main { background-color: #3498db; color: white; width: 80%; margin: 5px auto; display: block; }
+.btn-green { background-color: #27ae60; color: white; }
+.btn-red { background-color: #e74c3c; color: white; }
+.btn-grey { background-color: #95a5a6; color: white; width: 80%; margin: 5px auto; display: block;}
+.btn-yellow { background-color: #f1c40f; color: black; }
+
+/* Tarjetas Juego */
+.event-card {
+    background: #ecf0f1;
+    border: 2px solid #bdc3c7;
+    padding: 10px;
+    margin: 10px 0;
+    cursor: grab;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.event-card img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
+/* Tabs Rankings */
+.tabs { display: flex; justify-content: center; margin-bottom: 15px; }
+.tab-btn { background: #eee; color: #333; margin: 0 5px; }
+.tab-btn.active { background: #3498db; color: white; font-weight: bold; }
+
+/* Admin List */
+.scroll-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    padding: 10px;
+    text-align: left;
+}
+.admin-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding: 5px 0;
+    font-size: 14px;
+}
+.admin-actions button {
+    padding: 5px 10px;
+    margin: 0 2px;
+    font-size: 12px;
+}

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historia RJ</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+
+    <div class="container">
+        <div id="login-screen" class="screen">
+            <h1>🏰 Familia RJ</h1>
+            <p>Selecciona tu nombre:</p>
+            <select id="player-select"><option value="">Cargando...</option></select>
+            <input type="password" id="password-input" placeholder="Contraseña">
+            <button onclick="login()">Entrar</button>
+        </div>
+
+        <div id="menu-screen" class="screen hidden">
+            <h2 id="welcome-msg">Hola</h2>
+            <div class="menu-grid">
+                <button class="btn-main" onclick="showScreen('add-event-screen'); resetEventForm();">📸 Añadir Recuerdo</button>
+                <button class="btn-main" onclick="setupGame('solo')">🧩 Jugar Solo</button>
+                <button class="btn-main" onclick="enterDuelLobby()">⚔️ Sala de Duelos</button> <button class="btn-main" onclick="showHallOfFame()">🏆 Rankings</button>
+                <button class="btn-grey" onclick="showAdmin()">⚙️ Administración</button>
+            </div>
+        </div>
+
+        <div id="add-event-screen" class="screen hidden">
+            <h3 id="form-title">Nuevo Aconteciento</h3>
+            <input type="hidden" id="evt-id">
+            <input type="text" id="evt-title" placeholder="¿Qué ocurrió?">
+            <div class="date-group">
+                <input type="number" id="evt-year" placeholder="Año">
+                <input type="text" id="evt-date" placeholder="Fecha (DD/MM/AAAA)">
+            </div>
+            <p>Foto (Opcional):</p>
+            <input type="file" id="evt-photo">
+            <div class="actions">
+                <button class="btn-green" onclick="uploadEvent()">Guardar</button>
+                <button class="btn-red" onclick="showScreen('menu-screen')">Cancelar</button>
+            </div>
+        </div>
+
+        <div id="duel-lobby-screen" class="screen hidden">
+            <h3>⚔️ Sala de Duelos</h3>
+            
+            <div class="duel-create-section">
+                <p>Crear nueva partida:</p>
+                <div style="display:flex; justify-content:center; gap:10px; align-items:center;">
+                    <select id="duel-rounds" style="width: auto;">
+                        <option value="3">3 Cartas</option>
+                        <option value="5" selected>5 Cartas</option>
+                    </select>
+                    <button class="btn-green" onclick="createDuel()" style="margin:0;">Crear</button>
+                </div>
+            </div>
+
+            <hr>
+
+            <h4>Partidas esperando rival:</h4>
+            <div id="lobbies-list" class="scroll-list">
+                <p>Buscando partidas...</p>
+            </div>
+
+            <button class="btn-red" onclick="showScreen('menu-screen')">Volver al Menú</button>
+        </div>
+
+        <div id="duel-wait-screen" class="screen hidden">
+            <h3>⏳ Esperando rival...</h3>
+            <p>Tu partida está visible en el lobby.</p>
+            <div class="loader"></div>
+            <button class="btn-red" onclick="location.reload()">Cancelar</button>
+        </div>
+
+        <div id="game-screen" class="screen hidden">
+            <h3 id="game-mode-title">Ordena los eventos</h3>
+            <div id="cards-container"></div>
+            <button class="btn-green" onclick="checkOrder()">¡Comprobar Orden!</button>
+            <button class="btn-red" onclick="showScreen('menu-screen')">Abandonar</button>
+        </div>
+
+        <div id="hof-screen" class="screen hidden">
+            <h3>🏆 Clasificación</h3>
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('weekly')">Semanal</button>
+                <button class="tab-btn" onclick="switchTab('total')">Histórico</button>
+            </div>
+            <div id="hof-list"></div>
+            <button class="btn-red" onclick="showScreen('menu-screen')">Volver</button>
+        </div>
+
+        <div id="admin-screen" class="screen hidden">
+            <h3>⚙️ Administración</h3>
+            <div class="admin-section">
+                <h4>Gestionar Recuerdos</h4>
+                <div id="admin-events-list" class="scroll-list"></div>
+            </div>
+            <div class="admin-section">
+                <h4>Gestionar Puntos</h4>
+                <button class="btn-red small" onclick="resetWeekly()">🔄 Reiniciar Semanal</button>
+                <button class="btn-red small" onclick="resetTotal()">⚠️ Reiniciar HISTÓRICO</button>
+            </div>
+            <button class="btn-main" onclick="showScreen('menu-screen')">Volver</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
