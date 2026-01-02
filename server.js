@@ -15,8 +15,7 @@ const io = new Server(server, { cors: { origin: "*" } });
 
 app.use(cors());
 app.use(express.json());
-// Nota: en Render/Linux es mejor usar path, pero si te funciona así en local lo dejamos
-// Si en Render falla, cambia 'public' por: require('path').join(__dirname, 'public')
+// Nota: Si en Render te da problemas la ruta, usa: require('path').join(__dirname, 'public')
 app.use(express.static('public')); 
 
 // Conexión a Base de Datos
@@ -49,17 +48,17 @@ const PlayerSchema = new mongoose.Schema({
     stats: {
         totalPoints: { type: Number, default: 0 },
         weeklyPoints: { type: Number, default: 0 },
-        sequencesSolved: { type: Map, of: Number, default: {} } // Para estadísticas detalladas
+        sequencesSolved: { type: Map, of: Number, default: {} } 
     }
 });
 
 const EventSchema = new mongoose.Schema({
     title: { type: String, required: true },
     year: { type: Number, required: true },
-    exactDate: { type: Date }, // Opcional, para desempates
+    exactDate: { type: Date }, 
     imageUrl: { type: String },
     addedBy: { type: String },
-    difficulty: { type: String, default: 'normal' } // <--- NUEVO: Aquí guardamos si es fácil o normal
+    difficulty: { type: String, default: 'normal' } 
 });
 
 const Player = mongoose.model('Player', PlayerSchema);
@@ -67,41 +66,65 @@ const Event = mongoose.model('Event', EventSchema);
 
 // --- RUTAS API ---
 
-// 1. Obtener lista de jugadores
+// 1. Jugadores
 app.get('/api/players', async (req, res) => {
     const players = await Player.find({}, 'name');
     res.json(players);
 });
 
-// 2. Obtener todos los eventos (Para el admin)
+// 2. Todos los eventos (Admin)
 app.get('/api/events', async (req, res) => {
     const events = await Event.find().sort({ year: 1 });
     res.json(events);
 });
 
-// 3. Crear nuevo evento (Subida de foto incluida)
+// 3. CREAR evento
 app.post('/api/events', upload.single('image'), async (req, res) => {
     try {
-        const { title, year, exactDate, difficulty } = req.body; // <--- AÑADIDO difficulty
+        const { title, year, exactDate, difficulty } = req.body;
         
         const newEvent = new Event({ 
             title, 
             year, 
             exactDate: exactDate || null,
-            imageUrl: req.file ? req.file.path : null, // Si no hay foto, null
-            difficulty: difficulty || 'normal' // <--- AÑADIDO: Si no envían nada, es normal
+            imageUrl: req.file ? req.file.path : null, 
+            difficulty: difficulty || 'normal'
         });
         
         await newEvent.save();
-        console.log(`📸 Nuevo evento guardado: ${title} (${difficulty})`);
         res.json(newEvent);
     } catch (error) {
         console.error("Error al subir:", error);
-        res.status(500).json({ error: "Error al guardar el evento" });
+        res.status(500).json({ error: "Error al guardar" });
     }
 });
 
-// 4. Borrar evento
+// 3.5. EDITAR evento (¡ESTA ES LA PARTE QUE TE FALTABA!)
+app.put('/api/events/:id', upload.single('image'), async (req, res) => {
+    try {
+        const { title, year, exactDate, difficulty } = req.body;
+        
+        const updateData = { 
+            title, 
+            year, 
+            difficulty: difficulty || 'normal' 
+        };
+
+        if (exactDate) updateData.exactDate = exactDate;
+        
+        if (req.file) {
+            updateData.imageUrl = req.file.path;
+        }
+
+        await Event.findByIdAndUpdate(req.params.id, updateData);
+        res.json({ success: true });
+    } catch (error) {
+        console.error("Error al editar:", error);
+        res.status(500).json({ error: "No se pudo editar" });
+    }
+});
+
+// 4. BORRAR evento
 app.delete('/api/events/:id', async (req, res) => {
     try {
         await Event.findByIdAndDelete(req.params.id);
@@ -111,99 +134,91 @@ app.delete('/api/events/:id', async (req, res) => {
     }
 });
 
-// 5. OBTENER CARTAS PARA JUGAR (Lógica del Juego)
+// 5. JUEGO (Obtener cartas)
 app.get('/api/game', async (req, res) => {
     try {
         const count = parseInt(req.query.count) || 5;
-        const difficulty = req.query.difficulty; // <--- LEEMOS SI ES MODO EASY
+        const difficulty = req.query.difficulty; 
         
-        // Filtro: Si piden 'easy', solo buscamos easy. Si no, buscamos todo.
         let matchStage = {};
         if (difficulty === 'easy') {
             matchStage = { difficulty: 'easy' };
         }
 
-        // Usamos aggregate para sacar elementos aleatorios
         const selection = await Event.aggregate([
-            { $match: matchStage }, // <--- APLICAMOS EL FILTRO
+            { $match: matchStage },
             { $sample: { size: count } }
         ]);
 
-        // Verificamos si hay suficientes cartas
         if (selection.length < count) {
-            return res.status(400).json({ 
-                error: "No hay suficientes eventos para jugar. ¡Añade más!" 
-            });
+            return res.status(400).json({ error: "Faltan eventos para jugar." });
         }
         
         res.json(selection);
-    } catch (e) { 
-        console.error(e);
-        res.status(500).json({ error: "Error obteniendo cartas" }); 
-    }
+    } catch (e) { res.status(500).json({ error: "Error servidor" }); }
 });
 
-// 6. Guardar Puntuación
+// 6. Puntuación
 app.post('/api/score', async (req, res) => {
     const { playerName, points, type } = req.body; 
-    
     const update = { 
-        $inc: { 
-            "stats.totalPoints": points, 
-            "stats.weeklyPoints": points 
-        } 
+        $inc: { "stats.totalPoints": points, "stats.weeklyPoints": points } 
     };
-
-    // Si es modo solo, guardamos estadística de racha
-    if (type === 'solo') {
-        update.$inc[`stats.sequencesSolved.${points}`] = 1; 
-    }
-
+    if (type === 'solo') update.$inc[`stats.sequencesSolved.${points}`] = 1; 
     await Player.findOneAndUpdate({ name: playerName }, update);
     res.json({ success: true });
 });
 
-// 7. Hall of Fame (Rankings)
+// 7. Rankings
 app.get('/api/hof', async (req, res) => {
     const total = await Player.find().sort({ "stats.totalPoints": -1 }).limit(10);
     const weekly = await Player.find().sort({ "stats.weeklyPoints": -1 }).limit(10);
     res.json({ total, weekly });
 });
 
-// 8. Rutas de Admin (Resetear puntos)
+// 8. Admin Resets
 app.post('/api/admin/reset-weekly', async (req, res) => {
     await Player.updateMany({}, { $set: { "stats.weeklyPoints": 0 } });
     res.json({ success: true });
 });
-
 app.post('/api/admin/reset-total', async (req, res) => {
     await Player.updateMany({}, { $set: { "stats.totalPoints": 0 } });
     res.json({ success: true });
 });
 
-// 9. Inicializar Jugadores (Tu botón secreto)
+// 9. Init Players
 app.get('/init-players', async (req, res) => {
-    const nombres = ["Elena", "Pablo", "Alfonso"]; // <--- Tus nombres aquí
+    const nombres = ["Elena", "Pablo", "Alfonso"];
     for (const nombre of nombres) {
-        await Player.findOneAndUpdate(
-            { name: nombre }, 
-            { name: nombre }, 
-            { upsert: true }
-        );
+        await Player.findOneAndUpdate({ name: nombre }, { name: nombre }, { upsert: true });
     }
-    res.send("Jugadores creados/verificados.");
+    res.send("Jugadores listos.");
 });
 
-// --- SOCKET.IO (Chat / Duelos futuros) ---
+// --- SOCKETS ---
 io.on('connection', (socket) => {
-    console.log('Un usuario se conectó');
-    socket.on('disconnect', () => {
-        console.log('Usuario desconectado');
+    socket.on('login-user', (name) => { console.log("User:", name); });
+    
+    socket.on('join-lobby', (name) => {
+        // Aquí podrías añadir lógica real de lobby
+        io.emit('update-lobby', [{name}]); // Ejemplo básico
+    });
+    
+    socket.on('start-multiduel', async (difficulty) => {
+        // Lógica simplificada para iniciar duelo
+        const events = await Event.aggregate([
+            { $match: difficulty === 'easy' ? { difficulty: 'easy' } : {} },
+            { $sample: { size: 5 } }
+        ]);
+        io.emit('multiduel-start', events);
+    });
+
+    socket.on('multiduel-finished', (data) => {
+        io.emit('player-finished', data);
     });
 });
 
-// --- ARRANCAR SERVIDOR ---
 const port = process.env.PORT || 3000;
 server.listen(port, () => {
-    console.log(`🚀 Servidor funcionando en puerto ${port}`);
+    console.log(`🚀 Servidor listo en puerto ${port}`);
 });
