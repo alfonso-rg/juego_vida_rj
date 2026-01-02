@@ -24,6 +24,10 @@
             <div class="menu-grid">
                 <button class="btn-main" onclick="showScreen('add-event-screen'); resetEventForm();">📸 Añadir Recuerdo</button>
                 <button class="btn-main" onclick="setupGame('solo')">🧩 Jugar Solo</button>
+                <div style="margin: 10px 0;">
+                    <input type="checkbox" id="mode-junior">
+                    <label for="mode-junior">👶 Activar Modo Junior</label>
+                </div>
                 <button class="btn-main" onclick="enterDuelLobby()">⚔️ Sala de Duelos</button> <button class="btn-main" onclick="showHallOfFame()">🏆 Rankings</button>
                 <button class="btn-grey" onclick="showAdmin()">⚙️ Administración</button>
             </div>
@@ -37,6 +41,10 @@
                 <input type="number" id="evt-year" placeholder="Año">
                 <input type="text" id="evt-date" placeholder="Fecha (DD/MM/AAAA)">
             </div>
+            <select id="evt-difficulty">
+                <option value="normal">Normal (Para adultos)</option>
+                <option value="easy">⭐ Junior (Fácil para niños)</option>
+            </select>
             <p>Foto (Opcional):</p>
             <input type="file" id="evt-photo">
             <div class="actions">
