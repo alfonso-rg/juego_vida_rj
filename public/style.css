@@ -13,30 +13,38 @@ body {
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 .hidden { display: none; }
-h1 { color: #2c3e50; }
-input, select {
-    padding: 10px;
+h1, h2, h3 { color: #2c3e50; }
+
+/* Inputs y Selectores generales */
+input[type="text"], input[type="password"], input[type="number"], select {
+    padding: 12px;
     margin: 10px 0;
-    width: 80%;
+    width: 90%; /* Un poco más ancho para móviles */
     border: 1px solid #ddd;
-    border-radius: 5px;
+    border-radius: 8px;
+    font-size: 16px;
 }
+
+/* Botones */
 button {
-    padding: 10px 20px;
-    margin: 10px;
+    padding: 12px 20px;
+    margin: 8px;
     cursor: pointer;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     font-size: 16px;
-    transition: transform 0.1s;
+    font-weight: bold;
+    transition: transform 0.1s, opacity 0.2s;
 }
 button:active { transform: scale(0.95); }
+button:hover { opacity: 0.9; }
 
-.btn-main { background-color: #3498db; color: white; width: 80%; margin: 5px auto; display: block; }
+.btn-main { background-color: #3498db; color: white; width: 90%; margin: 8px auto; display: block; }
 .btn-green { background-color: #27ae60; color: white; }
 .btn-red { background-color: #e74c3c; color: white; }
-.btn-grey { background-color: #95a5a6; color: white; width: 80%; margin: 5px auto; display: block;}
+.btn-grey { background-color: #95a5a6; color: white; width: 90%; margin: 8px auto; display: block;}
 .btn-yellow { background-color: #f1c40f; color: black; }
+.small { padding: 5px 10px; font-size: 0.9em; }
 
 /* Tarjetas Juego */
 .event-card {
@@ -49,6 +57,7 @@ button:active { transform: scale(0.95); }
     display: flex;
     align-items: center;
     justify-content: space-between;
+    touch-action: none; /* Importante para móviles */
 }
 .event-card img {
     width: 60px;
@@ -57,111 +66,87 @@ button:active { transform: scale(0.95); }
     border-radius: 5px;
     margin-right: 10px;
 }
+.event-card.dragging { opacity: 0.5; border: 2px dashed #3498db; }
 
 /* Tabs Rankings */
-.tabs { display: flex; justify-content: center; margin-bottom: 15px; }
-.tab-btn { background: #eee; color: #333; margin: 0 5px; }
-.tab-btn.active { background: #3498db; color: white; font-weight: bold; }
+.tabs { display: flex; justify-content: center; margin-bottom: 15px; gap: 10px; }
+.tab-btn { background: #eee; color: #555; }
+.tab-btn.active { background: #3498db; color: white; }
+#hof-list ol { text-align: left; padding-left: 20px; font-size: 1.1em; }
+#hof-list li { margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
 
 /* Admin List */
-.scroll-list {
-    max-height: 300px;
-    overflow-y: auto;
-    border: 1px solid #eee;
-    padding: 10px;
-    text-align: left;
+.scroll-list { max-height: 300px; overflow-y: auto; text-align: left; }
+.admin-item { 
+    background: #f9f9f9; padding: 10px; margin: 5px 0; border-radius: 5px; 
+    display: flex; justify-content: space-between; align-items: center; 
+    border-left: 4px solid #3498db;
 }
-.admin-item {
+.admin-actions { display: flex; gap: 5px; }
+
+/* --- ESTILOS NUEVOS: INTERRUPTOR (SWITCH) --- */
+.toggle-container {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #eee;
-    padding: 5px 0;
-    font-size: 14px;
-}
-.admin-actions button {
-    padding: 5px 10px;
-    margin: 0 2px;
-    font-size: 12px;
-}
-
-/* --- AÑADIR AL FINAL DE STYLE.CSS --- */
-
-/* Estilo para el Selector de Dificultad y otros Selects */
-select {
-    width: 100%; /* Ocupa todo el ancho disponible */
-    padding: 12px;
-    border: 2px solid #bdc3c7;
-    border-radius: 8px;
-    background-color: white;
-    font-size: 16px;
-    color: #2c3e50;
-    margin-bottom: 15px;
-    cursor: pointer;
-    appearance: none; /* Quita el estilo feo por defecto del navegador */
-    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
-    background-repeat: no-repeat;
-    background-position: right .7em top 50%;
-    background-size: .65em auto;
-}
-
-/* Estilo para el Checkbox del Modo Junior */
-/* Ocultamos el checkbox feo original */
-input[type="checkbox"] {
-    accent-color: #f1c40f; /* Color amarillo al marcarlo */
-    width: 20px;
-    height: 20px;
-    vertical-align: middle;
-    margin-right: 10px;
-    cursor: pointer;
-}
-
-/* El texto al lado del checkbox */
-label[for="mode-junior"] {
-    font-size: 1.1em;
-    font-weight: bold;
-    color: #2c3e50;
-    cursor: pointer;
-    vertical-align: middle;
-    display: inline-block;
-    padding: 10px;
-    border: 2px dashed #bdc3c7;
-    border-radius: 10px;
-    width: 80%;
-    transition: all 0.2s;
-}
-
-/* Efecto cuando marcas el Modo Junior */
-input[type="checkbox"]:checked + label {
-    background-color: #fff9c4; /* Fondo amarillito suave */
-    border-color: #f1c40f;
-    color: #d35400;
-}
-
-/* Mejoras en la Lista de Admin */
-.admin-item {
-    background: white;
+    justify-content: center;
+    margin: 20px 0;
+    background: #f8f9fa;
     padding: 15px;
-    margin: 10px 0;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-left: 5px solid #3498db; /* Borde azul a la izquierda */
+    border-radius: 12px;
 }
 
-/* Diferenciar visualmente los items Junior en la lista */
-.admin-item span:contains("⭐") { /* Esto es un truco visual, pero mejor usar clases si pudieramos */
+.toggle-label {
     font-weight: bold;
+    color: #2c3e50;
+    margin: 0 10px;
 }
 
-.admin-actions {
-    display: flex;
-    gap: 10px; /* Espacio entre botones editar y borrar */
+/* Caja del interruptor */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
 }
 
-.admin-actions button {
-    margin: 0; /* Quitar margenes extra de los botones */
-    padding: 8px 12px;
+/* Ocultar checkbox feo */
+.switch input { 
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* Deslizador */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+/* Estado activado */
+input:checked + .slider {
+    background-color: #f1c40f; /* Amarillo Estrella */
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #f1c40f;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
 }

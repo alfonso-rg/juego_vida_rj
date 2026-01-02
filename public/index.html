@@ -21,67 +21,42 @@
 
         <div id="menu-screen" class="screen hidden">
             <h2 id="welcome-msg">Hola</h2>
+            
+            <div class="toggle-container">
+                <span class="toggle-label">Modo Normal</span>
+                <label class="switch">
+                    <input type="checkbox" id="mode-junior">
+                    <span class="slider round"></span>
+                </label>
+                <span class="toggle-label">⭐ Modo Junior</span>
+            </div>
+
             <div class="menu-grid">
                 <button class="btn-main" onclick="showScreen('add-event-screen'); resetEventForm();">📸 Añadir Recuerdo</button>
                 <button class="btn-main" onclick="setupGame('solo')">🧩 Jugar Solo</button>
-                <div style="margin: 10px 0;">
-                    <input type="checkbox" id="mode-junior">
-                    <label for="mode-junior">👶 Activar Modo Junior</label>
-                </div>
-                <button class="btn-main" onclick="enterDuelLobby()">⚔️ Sala de Duelos</button> <button class="btn-main" onclick="showHallOfFame()">🏆 Rankings</button>
-                <button class="btn-grey" onclick="showAdmin()">⚙️ Administración</button>
+                <button class="btn-main" onclick="enterDuelLobby()">⚔️ Sala de Duelos</button> 
+                <button class="btn-main" onclick="showHallOfFame()">🏆 Clasificación</button>
+                <button class="btn-grey" onclick="showAdmin()">⚙️ Admin</button>
             </div>
         </div>
 
         <div id="add-event-screen" class="screen hidden">
-            <h3 id="form-title">Nuevo Aconteciento</h3>
+            <h3 id="form-title">Nuevo Recuerdo</h3>
             <input type="hidden" id="evt-id">
-            <input type="text" id="evt-title" placeholder="¿Qué ocurrió?">
-            <div class="date-group">
-                <input type="number" id="evt-year" placeholder="Año">
-                <input type="text" id="evt-date" placeholder="Fecha (DD/MM/AAAA)">
-            </div>
-            <select id="evt-difficulty">
-                <option value="normal">Normal (Para adultos)</option>
-                <option value="easy">⭐ Junior (Fácil para niños)</option>
-            </select>
-            <p>Foto (Opcional):</p>
-            <input type="file" id="evt-photo">
-            <div class="actions">
-                <button class="btn-green" onclick="uploadEvent()">Guardar</button>
-                <button class="btn-red" onclick="showScreen('menu-screen')">Cancelar</button>
-            </div>
-        </div>
-
-        <div id="duel-lobby-screen" class="screen hidden">
-            <h3>⚔️ Sala de Duelos</h3>
+            <input type="text" id="evt-title" placeholder="Título (ej: Nace Pablo)">
+            <input type="number" id="evt-year" placeholder="Año (ej: 2018)">
             
-            <div class="duel-create-section">
-                <p>Crear nueva partida:</p>
-                <div style="display:flex; justify-content:center; gap:10px; align-items:center;">
-                    <select id="duel-rounds" style="width: auto;">
-                        <option value="3">3 Cartas</option>
-                        <option value="5" selected>5 Cartas</option>
-                    </select>
-                    <button class="btn-green" onclick="createDuel()" style="margin:0;">Crear</button>
-                </div>
-            </div>
+            <label style="display:block; text-align:left; margin-top:10px; font-weight:bold;">Dificultad:</label>
+            <select id="evt-difficulty">
+                <option value="normal">Normal (Adultos)</option>
+                <option value="easy">⭐ Junior (Fácil)</option>
+            </select>
 
-            <hr>
-
-            <h4>Partidas esperando rival:</h4>
-            <div id="lobbies-list" class="scroll-list">
-                <p>Buscando partidas...</p>
-            </div>
-
-            <button class="btn-red" onclick="showScreen('menu-screen')">Volver al Menú</button>
-        </div>
-
-        <div id="duel-wait-screen" class="screen hidden">
-            <h3>⏳ Esperando rival...</h3>
-            <p>Tu partida está visible en el lobby.</p>
-            <div class="loader"></div>
-            <button class="btn-red" onclick="location.reload()">Cancelar</button>
+            <input type="text" id="evt-date" placeholder="Fecha exacta (dd/mm/aaaa) - Opcional">
+            <input type="file" id="evt-photo" accept="image/*">
+            
+            <button class="btn-green" onclick="uploadEvent()">Guardar</button>
+            <button class="btn-red" onclick="showScreen('menu-screen')">Cancelar</button>
         </div>
 
         <div id="game-screen" class="screen hidden">
@@ -114,6 +89,19 @@
             </div>
             <button class="btn-main" onclick="showScreen('menu-screen')">Volver</button>
         </div>
+        
+        <div id="lobby-screen" class="screen hidden">
+            <h3>⚔️ Sala de Duelos</h3>
+            <p>Esperando rivales...</p>
+            <div id="lobby-players-list" style="margin: 20px; font-weight: bold;"></div>
+            <select id="lobby-difficulty">
+                <option value="normal">Normal</option>
+                <option value="easy">⭐ Modo Junior</option>
+            </select>
+            <button class="btn-green" onclick="startMultiDuel()">¡EMPEZAR!</button>
+            <button class="btn-red" onclick="leaveLobby()">Salir</button>
+        </div>
+
     </div>
     <script src="script.js"></script>
 </body>

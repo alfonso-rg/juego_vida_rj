@@ -32,7 +32,7 @@ function login() {
     const pass = document.getElementById('password-input').value;
 
     if (!name) return Swal.fire('Error', 'Elige nombre', 'warning');
-    if (pass !== GAME_PASSWORD) return Swal.fire('Error', 'Contraseña mal', 'error');
+    if (pass !== GAME_PASSWORD) return Swal.fire('Error', 'Contraseña incorrecta', 'error');
 
     currentPlayer = name;
     document.getElementById('welcome-msg').textContent = `Hola, ${currentPlayer}`;
@@ -65,8 +65,8 @@ socket.on('multiduel-start', (events) => {
     isDuel = true;
     attempts = 0;
     currentEvents = events;
-    renderGame("⚔️ DUELO");
-    Swal.fire({ title: '¡YA!', timer: 1000, showConfirmButton: false });
+    renderGame("⚔️ DUELO EN MARCHA");
+    Swal.fire({ title: '¡A JUGAR!', timer: 1000, showConfirmButton: false });
 });
 socket.on('player-finished', (data) => {
     if (data.name !== currentPlayer) Swal.fire('Info', `${data.name} ha terminado.`, 'info');
@@ -77,12 +77,15 @@ async function setupGame(mode) {
     isDuel = false;
     if (mode === 'solo') {
         const isJunior = document.getElementById('mode-junior') ? document.getElementById('mode-junior').checked : false;
+        
         const { value: count } = await Swal.fire({
-            title: isJunior ? 'Modo Junior 👶' : 'Normal',
+            title: isJunior ? 'Modo Junior ⭐' : 'Modo Normal',
             input: 'range',
+            inputLabel: '¿Cuántas cartas?',
             inputAttributes: { min: 2, max: 10, step: 1 },
             inputValue: 3
         });
+        
         if (count) startGameSolo(count, isJunior ? 'easy' : 'normal');
     }
 }
@@ -90,13 +93,12 @@ async function setupGame(mode) {
 async function startGameSolo(count, difficulty) {
     Swal.fire({title: 'Cargando...', didOpen: () => Swal.showLoading()});
     try {
-        // CORRECCIÓN: Ruta con 's' (events) y parámetros
         const res = await fetch(`/api/game?count=${count}&difficulty=${difficulty}`);
         const data = await res.json();
         if (data.error) throw new Error(data.error);
         
         currentEvents = data;
-        renderGame(difficulty === 'easy' ? "Junior 👶" : "Solitario");
+        renderGame(difficulty === 'easy' ? "Nivel Junior ⭐" : "Nivel Maestro");
         Swal.close();
     } catch(e) { Swal.fire('Ups', e.message, 'error'); }
 }
@@ -113,7 +115,7 @@ function renderGame(title) {
         div.draggable = true;
         div.dataset.id = evt._id;
         const img = evt.imageUrl ? `<img src="${evt.imageUrl}">` : '';
-        div.innerHTML = `<div style="display:flex;align-items:center">${img}<strong>${evt.title}</strong></div><span>☰</span>`;
+        div.innerHTML = `<div style="display:flex;align-items:center">${img}<strong>${evt.title}</strong></div><span style="font-size:1.5em;color:#ccc">≡</span>`;
         container.appendChild(div);
         addDragEvents(div, container);
     });
@@ -134,11 +136,11 @@ async function checkOrder() {
     if (isWin) {
         if (isDuel) {
             socket.emit('multiduel-finished', { name: currentPlayer, score: currentEvents.length });
-            Swal.fire('¡GANASTE!', '', 'success');
+            Swal.fire('¡GANASTE! 🏆', '', 'success');
             showScreen('menu-screen');
         } else {
             if (attempts === 1) {
-                Swal.fire('¡PERFECTO!', 'Puntos sumados', 'success');
+                Swal.fire('¡PERFECTO! 🎉', 'Puntos sumados', 'success');
                 await saveScore(currentEvents.length);
             } else {
                 Swal.fire('Correcto', 'Pero sin puntos (intentos extra)', 'info');
@@ -193,7 +195,7 @@ async function uploadEvent() {
     }
     if (photo) formData.append('image', photo);
 
-    // CORRECCIÓN CLAVE: PLURAL (/api/events)
+    // CORRECCIÓN PLURAL (/api/events)
     const url = id ? `/api/events/${id}` : '/api/events'; 
     const method = id ? 'PUT' : 'POST';
 
@@ -219,8 +221,7 @@ async function uploadEvent() {
 // --- 6. ADMIN ---
 async function showAdmin() {
     showScreen('admin-screen');
-    // CORRECCIÓN: Ruta /api/events (sin /all)
-    const res = await fetch('/api/events'); 
+    const res = await fetch('/api/events'); // Corregido: sin /all
     const events = await res.json();
     const list = document.getElementById('admin-events-list');
     list.innerHTML = '';
@@ -229,15 +230,14 @@ async function showAdmin() {
         const div = document.createElement('div');
         div.className = 'admin-item';
         const star = evt.difficulty === 'easy' ? '⭐' : '';
-        // Guardamos el objeto entero en el botón para editarlo luego
-        // Usamos replace para evitar fallos con comillas en el JSON
+        // Truco para evitar problemas con comillas en el JSON
         const evtString = JSON.stringify(evt).replace(/'/g, "&#39;");
         
         div.innerHTML = `
             <span>${evt.year} - ${evt.title} ${star}</span>
-            <div class=\"admin-actions\">
-                <button class=\"btn-yellow\" onclick='editEvent(${evtString})'>✏️</button>
-                <button class=\"btn-red\" onclick=\"deleteEvent('${evt._id}')\">🗑️</button>
+            <div class="admin-actions">
+                <button class="btn-yellow" onclick='editEvent(${evtString})'>✏️</button>
+                <button class="btn-red" onclick="deleteEvent('${evt._id}')">🗑️</button>
             </div>
         `;
         list.appendChild(div);
@@ -263,7 +263,6 @@ function editEvent(evt) {
 async function deleteEvent(id) {
     const confirm = await Swal.fire({ title: '¿Borrar?', icon: 'warning', showCancelButton: true });
     if (confirm.isConfirmed) {
-        // CORRECCIÓN: Ruta Plural
         await fetch(`/api/events/${id}`, { method: 'DELETE' });
         showAdmin(); 
     }
