@@ -84,3 +84,84 @@ button:active { transform: scale(0.95); }
     margin: 0 2px;
     font-size: 12px;
 }
+
+/* --- AÑADIR AL FINAL DE STYLE.CSS --- */
+
+/* Estilo para el Selector de Dificultad y otros Selects */
+select {
+    width: 100%; /* Ocupa todo el ancho disponible */
+    padding: 12px;
+    border: 2px solid #bdc3c7;
+    border-radius: 8px;
+    background-color: white;
+    font-size: 16px;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    cursor: pointer;
+    appearance: none; /* Quita el estilo feo por defecto del navegador */
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right .7em top 50%;
+    background-size: .65em auto;
+}
+
+/* Estilo para el Checkbox del Modo Junior */
+/* Ocultamos el checkbox feo original */
+input[type="checkbox"] {
+    accent-color: #f1c40f; /* Color amarillo al marcarlo */
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+/* El texto al lado del checkbox */
+label[for="mode-junior"] {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #2c3e50;
+    cursor: pointer;
+    vertical-align: middle;
+    display: inline-block;
+    padding: 10px;
+    border: 2px dashed #bdc3c7;
+    border-radius: 10px;
+    width: 80%;
+    transition: all 0.2s;
+}
+
+/* Efecto cuando marcas el Modo Junior */
+input[type="checkbox"]:checked + label {
+    background-color: #fff9c4; /* Fondo amarillito suave */
+    border-color: #f1c40f;
+    color: #d35400;
+}
+
+/* Mejoras en la Lista de Admin */
+.admin-item {
+    background: white;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 5px solid #3498db; /* Borde azul a la izquierda */
+}
+
+/* Diferenciar visualmente los items Junior en la lista */
+.admin-item span:contains("⭐") { /* Esto es un truco visual, pero mejor usar clases si pudieramos */
+    font-weight: bold;
+}
+
+.admin-actions {
+    display: flex;
+    gap: 10px; /* Espacio entre botones editar y borrar */
+}
+
+.admin-actions button {
+    margin: 0; /* Quitar margenes extra de los botones */
+    padding: 8px 12px;
+}
