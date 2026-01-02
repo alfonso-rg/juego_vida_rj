@@ -49,6 +49,11 @@ button:active { transform: scale(0.95); }
     display: flex;
     align-items: center;
     justify-content: space-between;
+    
+    /* MEJORAS PARA MÓVIL */
+    touch-action: pan-y; /* Permite scroll vertical pero gestiona mejor el drag horizontal */
+    user-select: none;   /* Evita que se seleccione el texto al arrastrar */
+    -webkit-user-select: none;
 }
 .event-card img {
     width: 60px;
@@ -56,6 +61,13 @@ button:active { transform: scale(0.95); }
     object-fit: cover;
     border-radius: 5px;
     margin-right: 10px;
+}
+
+/* CLASE NUEVA: Aspecto del hueco donde vas a soltar la carta */
+.blue-background-class {
+    background-color: #d6eaf8;
+    border: 2px dashed #3498db;
+    opacity: 0.8;
 }
 
 /* Tabs Rankings */

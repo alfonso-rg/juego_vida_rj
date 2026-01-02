@@ -1,14 +1,14 @@
 const socket = io();
 
 // --- CONFIGURACIÓN ---
-const GAME_PASSWORD = 'pablo2101'; // <--- ¡CAMBIA ESTO SI QUIERES OTRA CONTRASEÑA!
+const GAME_PASSWORD = 'pablo2101'; 
 
 // VARIABLES GLOBALES
 let currentPlayer = null;
 let currentEvents = []; 
 let currentHofData = null;
 let attempts = 0;
-let isDuel = false; // Para saber si estamos en modo duelo
+let isDuel = false; 
 let currentDuelId = null;
 
 // AL CARGAR LA PÁGINA
@@ -39,7 +39,6 @@ function login() {
     const name = document.getElementById('player-select').value;
     const pass = document.getElementById('password-input').value;
 
-    // AQUÍ ESTÁ LA COMPROBACIÓN DE CONTRASEÑA
     if (!name) {
         Swal.fire('Error', 'Debes seleccionar un nombre', 'warning');
         return;
@@ -50,7 +49,6 @@ function login() {
         return;
     }
 
-    // Si todo va bien...
     currentPlayer = name;
     document.getElementById('welcome-msg').textContent = `Hola, ${currentPlayer}`;
     showScreen('menu-screen');
@@ -60,15 +58,12 @@ function login() {
 // 2. LÓGICA DEL MULTIJUGADOR (SOCKETS)
 // ---------------------------------------------------------
 
-// ACTUALIZAR LISTA DE PARTIDAS (LOBBY)
 socket.on('lobby_update', (games) => {
-    // Solo actualizamos si el usuario está mirando la pantalla del lobby
     if (document.getElementById('duel-lobby-screen').classList.contains('hidden')) return;
 
     const list = document.getElementById('lobbies-list');
     list.innerHTML = '';
     
-    // Filtramos solo las partidas que están esperando (waiting)
     const availableGames = Object.values(games).filter(g => g.state === 'waiting');
 
     if (availableGames.length === 0) {
@@ -80,8 +75,6 @@ socket.on('lobby_update', (games) => {
         const div = document.createElement('div');
         div.className = 'admin-item'; 
         
-        // Botón para unirse
-        // Si soy yo mismo el que creó la partida, no me muestro el botón de unirme
         let actionBtn = '';
         if (game.host !== currentPlayer) {
             actionBtn = `<button class="btn-green small" onclick="joinDuel('${game.id}')">Unirse</button>`;
@@ -97,23 +90,18 @@ socket.on('lobby_update', (games) => {
     });
 });
 
-// CUANDO CREO UNA PARTIDA
 socket.on('game_created', ({ gameId }) => {
     currentDuelId = gameId;
-    showScreen('duel-wait-screen'); // Pantalla de espera (relojito)
+    showScreen('duel-wait-screen'); 
 });
 
-// CUANDO EMPIEZA EL JUEGO (Para los dos jugadores a la vez)
 socket.on('game_start', ({ events, opponent }) => {
     isDuel = true;
     currentEvents = events;
     attempts = 0;
-    
-    // Renderizamos el tablero
     renderGame(`⚔️ Duelo contra ${opponent}`);
 });
 
-// CUANDO ALGUIEN GANA EL DUELO
 socket.on('duel_result', ({ winner }) => {
     if (winner === currentPlayer) {
         Swal.fire({
@@ -133,10 +121,9 @@ socket.on('duel_result', ({ winner }) => {
     showScreen('menu-screen');
 });
 
-// FUNCIONES PARA LOS BOTONES DEL LOBBY
 function enterDuelLobby() {
     showScreen('duel-lobby-screen');
-    socket.emit('enter_lobby'); // Pide la lista actualizada al servidor
+    socket.emit('enter_lobby'); 
 }
 
 function createDuel() {
@@ -151,11 +138,11 @@ function joinDuel(gameId) {
 
 
 // ---------------------------------------------------------
-// 3. LÓGICA DEL JUEGO (RENDERIZADO Y ARRASTRAR)
+// 3. LÓGICA DEL JUEGO (MODIFICADO PARA MÓVIL)
 // ---------------------------------------------------------
 
 async function setupGame(mode) {
-    isDuel = false; // Importante: no es duelo
+    isDuel = false; 
     if (mode === 'solo') {
         const { value: count } = await Swal.fire({
             title: '¿Cuántos eventos?',
@@ -195,33 +182,41 @@ function renderGame(titleText) {
     shuffled.forEach(evt => {
         const div = document.createElement('div');
         div.className = 'event-card';
-        div.draggable = true;
+        // NOTA: Ya no usamos draggable="true" aquí, SortableJS se encarga.
         div.dataset.id = evt._id;
         
         const imgHtml = evt.imageUrl ? `<img src="${evt.imageUrl}">` : '';
+        // 'pointer-events: none' en el contenido evita conflictos al arrastrar la imagen
         div.innerHTML = `
-            <div style="display:flex; align-items:center">
+            <div style="display:flex; align-items:center; pointer-events: none;">
                 ${imgHtml} 
                 <strong>${evt.title}</strong>
             </div>
-            <span>:::</span>
+            <span style="font-size:24px; color:#ccc;">≡</span>
         `;
         container.appendChild(div);
-        
-        // Añadimos la capacidad de arrastrar
-        addDragEvents(div, container);
+    });
+
+    // --- ACTIVAR SORTABLE JS (Móvil y PC) ---
+    if (window.sortableInstance) window.sortableInstance.destroy(); // Limpiar anterior si existe
+
+    window.sortableInstance = new Sortable(container, {
+        animation: 150, // Animación suave (ms)
+        ghostClass: 'blue-background-class', // Clase CSS para el hueco
+        touchStartThreshold: 5 // Tolerancia para distinguir click de arrastre en móvil
     });
 
     showScreen('game-screen');
 }
 
 // ---------------------------------------------------------
-// 4. COMPROBAR RESULTADO (EL CEREBRO DEL JUEGO)
+// 4. COMPROBAR RESULTADO
 // ---------------------------------------------------------
 
 async function checkOrder() {
     attempts++;
     const container = document.getElementById('cards-container');
+    // Obtenemos el orden actual del DOM (SortableJS mueve los elementos reales)
     const playerOrderIds = Array.from(container.children).map(c => c.dataset.id);
     
     // Calculamos el orden correcto (Año -> Fecha exacta)
@@ -234,11 +229,9 @@ async function checkOrder() {
     const isWin = JSON.stringify(playerOrderIds) === JSON.stringify(correctIds);
 
     if (isWin) {
-        // --- CASO 1: VICTORIA EN DUELO ---
         if (isDuel) {
             socket.emit('duel_win', { gameId: currentDuelId, winnerName: currentPlayer });
         } 
-        // --- CASO 2: VICTORIA SOLITARIO ---
         else {
             if (attempts === 1) {
                 const points = currentEvents.length;
@@ -250,11 +243,9 @@ async function checkOrder() {
             showScreen('menu-screen');
         }
     } else {
-        // --- CASO 3: FALLO ---
         if (isDuel) {
              Swal.fire('¡Incorrecto!', 'Rápido, inténtalo de nuevo antes que tu rival.', 'error');
         } else {
-            // Solitario
             if (attempts === 1) {
                 const penalty = -(currentEvents.length - 1);
                 Swal.fire('¡Fallaste! 😞', `Primer intento fallido: Pierdes ${Math.abs(penalty)} puntos.`, 'error');
@@ -275,7 +266,7 @@ async function saveScore(points) {
 }
 
 // ---------------------------------------------------------
-// 5. GESTIÓN DE EVENTOS (SUBIR FOTOS)
+// 5. GESTIÓN DE EVENTOS
 // ---------------------------------------------------------
 
 function resetEventForm() {
@@ -352,7 +343,6 @@ function switchTab(type) {
     document.getElementById('hof-list').innerHTML = html;
 }
 
-// ADMIN - CARGAR LISTA
 async function showAdmin() {
     showScreen('admin-screen');
     const res = await fetch('/api/events/all');
@@ -374,7 +364,6 @@ async function showAdmin() {
     });
 }
 
-// ADMIN - EDITAR
 function editEvent(evt) {
     showScreen('add-event-screen');
     document.getElementById('form-title').textContent = 'Editar Recuerdo';
@@ -390,12 +379,11 @@ function editEvent(evt) {
     }
 }
 
-// ADMIN - BORRAR Y RESETEAR
 async function deleteEvent(id) {
     const confirm = await Swal.fire({ title: '¿Borrar?', icon: 'warning', showCancelButton: true });
     if (confirm.isConfirmed) {
         await fetch(`/api/event/${id}`, { method: 'DELETE' });
-        showAdmin(); // Recargar lista
+        showAdmin(); 
     }
 }
 
@@ -415,35 +403,9 @@ async function resetTotal() {
     }
 }
 
-// ---------------------------------------------------------
-// 7. UTILIDADES (Navegación y Drag&Drop)
-// ---------------------------------------------------------
-
 function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
     document.getElementById(screenId).classList.remove('hidden');
 }
 
-// Drag & Drop
-function addDragEvents(item, container) {
-    item.addEventListener('dragstart', () => item.classList.add('dragging'));
-    item.addEventListener('dragend', () => item.classList.remove('dragging'));
-    
-    container.addEventListener('dragover', e => {
-        e.preventDefault();
-        const after = getDragAfterElement(container, e.clientY);
-        const drg = document.querySelector('.dragging');
-        if (!after) container.appendChild(drg);
-        else container.insertBefore(drg, after);
-    });
-}
-
-function getDragAfterElement(container, y) {
-    const draggableElements = [...container.querySelectorAll('.event-card:not(.dragging)')];
-    return draggableElements.reduce((closest, child) => {
-        const box = child.getBoundingClientRect();
-        const offset = y - box.top - box.height / 2;
-        if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
-        else return closest;
-    }, { offset: Number.NEGATIVE_INFINITY }).element;
-}
+// (Las funciones antiguas de Drag&Drop se han eliminado para limpiar el código)
